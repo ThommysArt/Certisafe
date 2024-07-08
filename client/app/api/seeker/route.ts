@@ -5,13 +5,13 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
     const db = new PrismaClient()
     try {
         if (req.method === "POST") {
-            const user = await db.user.create({
+            const seeker = await db.seeker.create({
                 data: {
                     userId: req.body.userId,
-                    name: req.body.name
+                    phone: req.body.phone
                 }
             })
-            return res.status(201).send(user)
+            return res.status(201).send(seeker)
         }
     } catch (error) {
         return res.status(500).send(error)
