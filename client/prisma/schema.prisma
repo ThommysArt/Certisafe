@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model User {
+  userId String @id
+  name   String
+  seeker Seeker?
+  admin  Admin?
+  employer Employer?
+}
+
+model Diploma {
+  id               Int    @id @default(autoincrement())
+  name             String
+  institution_name String
+  image            String
+  seekerId         Int
+  seeker           Seeker @relation(fields: [seekerId], references: [id])
+}
+
+model Certification {
+  id         Int    @id @default(autoincrement())
+  name       String
+  provider   String
+  image      String
+  seekerId   Int
+  seeker     Seeker @relation(fields: [seekerId], references: [id])
+}
+
+model Seeker {
+  id       Int    @id @default(autoincrement())
+  userId   String @unique
+  phone    String
+  user     User   @relation(fields: [userId], references: [userId])
+  diplomas Diploma[]
+  certifications Certification[]
+  conversations  Conversation[]
+  contracts      Contract[]
+  seekerSkills   SeekerSkill[]
+}
+
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  employerId Int
+  seekerId   Int
+  employer   Employer @relation(fields: [employerId], references: [id])
+  seeker     Seeker   @relation(fields: [seekerId], references: [id])
+  messages   Message[]
+}
+
+model Admin {
+  id     Int    @id @default(autoincrement())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [userId])
+}
+
+model Message {
+  id             Int    @id @default(autoincrement())
+  text           String
+  isSeeker       Boolean
+  conversationId Int @unique
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model Employer {
+  id           Int    @id @default(autoincrement())
+  userId       String @unique
+  phone        String
+  user         User   @relation(fields: [userId], references: [userId])
+  conversations Conversation[]
+  jobs          Job[]
+}
+
+model Contract {
+  id       Int    @id @default(autoincrement())
+  jobId    Int
+  salary   Float
+  seekerId Int
+  job      Job    @relation(fields: [jobId], references: [id])
+  seeker   Seeker @relation(fields: [seekerId], references: [id])
+}
+
+model Job {
+  id          Int    @id @default(autoincrement())
+  title       String
+  salary      Float
+  description String
+  publish_date DateTime
+  due_date    DateTime
+  employerId  Int
+  employer    Employer @relation(fields: [employerId], references: [id])
+  contracts   Contract[]
+  jobSkills   JobSkill[]
+}
+
+model SeekerSkill {
+  id       Int    @id @default(autoincrement())
+  seekerId Int
+  skillId  Int
+  seeker   Seeker @relation(fields: [seekerId], references: [id])
+  skill    Skill  @relation(fields: [skillId], references: [id])
+}
+
+model Option {
+  id         Int    @id @default(autoincrement())
+  label      String
+  isCorrect  Boolean
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id])
+}
+
+model Question {
+  id      Int    @id @default(autoincrement())
+  label   String
+  quizId  Int
+  quiz    Quiz   @relation(fields: [quizId], references: [id])
+  options Option[]
+}
+
+model Quiz {
+  id       Int    @id @default(autoincrement())
+  title    String
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+  questions Question[]
+}
+
+model Skill {
+  id         Int    @id @default(autoincrement())
+  name       String
+  seekerSkills SeekerSkill[]
+  courseSkills CourseSkill[]
+  jobSkills   JobSkill[]
+}
+
+model CourseSkill {
+  id       Int    @id @default(autoincrement())
+  courseId Int
+  skillId  Int
+  course   Course @relation(fields: [courseId], references: [id])
+  skill    Skill  @relation(fields: [skillId], references: [id])
+}
+
+model Course {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+  months      Int
+  quizzes     Quiz[]
+  courseSkills CourseSkill[]
+  lessons     Lesson[]
+}
+
+model JobSkill {
+  id     Int    @id @default(autoincrement())
+  jobId  Int
+  skillId Int
+  job    Job    @relation(fields: [jobId], references: [id])
+  skill  Skill  @relation(fields: [skillId], references: [id])
+}
+
+model Lesson {
+  id       Int    @id @default(autoincrement())
+  title    String
+  content  String
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+}
